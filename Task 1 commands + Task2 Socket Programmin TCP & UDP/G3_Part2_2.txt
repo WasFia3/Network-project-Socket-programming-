@@ -1,0 +1,84 @@
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.util.Scanner;
+
+public class UDPServer {
+    public static void main(String[] args) {
+        final int port = 1039; // Fixed port for server
+
+        try (DatagramSocket serverSocket = new DatagramSocket(port)) {
+            byte[] buffer = new byte[1024];
+            System.out.println("Server is listening on port: " + port);
+
+            while (true) {
+                // Receive a packet
+                DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
+                serverSocket.receive(receivedPacket);
+                String receivedMessage = new String(receivedPacket.getData(), 0, receivedPacket.getLength());
+                System.out.println("Message from " + receivedMessage );
+
+                // Get input from the console to send back to the client
+                Scanner scan = new Scanner(System.in);
+                System.out.print("Enter your message to send to client: ");
+                String fullMessage = scan.nextLine();
+
+                // Prepare the message to be sent back to the client
+                byte[] bufferServer = fullMessage.getBytes();
+                DatagramPacket sendPacket = new DatagramPacket(bufferServer, bufferServer.length,
+                        receivedPacket.getAddress(), receivedPacket.getPort());
+
+                // Send the packet to the client
+                serverSocket.send(sendPacket);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+
+
+
+
+
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.Scanner;
+
+public class UDPClient {
+    public static void main(String[] args) {
+        final int serverPort = 1039; // Fixed port where server is listening
+        Scanner scanner = new Scanner(System.in);
+
+        try {
+            InetAddress serverAddress = InetAddress.getByName("localhost");
+            DatagramSocket clientSocket = new DatagramSocket();
+            int clientNum = 1;
+
+            while (true) {
+                // Input message to send
+                System.out.print("Enter your message client" + clientNum + ": ");
+                String message = scanner.nextLine(); // Scan the message
+                String fullMessage = "Client" + clientNum + ": " + message; // Get the full message
+
+                // Send the message to the server
+                byte[] buffer = fullMessage.getBytes(); // Place the message in the buffer
+                DatagramPacket sendPacket = new DatagramPacket(buffer, buffer.length, serverAddress, serverPort);
+                clientSocket.send(sendPacket); // Send the packet to the server
+
+                // Receive the response from the server
+                DatagramPacket receivePacket = new DatagramPacket(new byte[1024], 1024);
+                clientSocket.receive(receivePacket);
+                String responseMessage = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                System.out.println("Server Response: " + responseMessage);
+
+                clientNum++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}

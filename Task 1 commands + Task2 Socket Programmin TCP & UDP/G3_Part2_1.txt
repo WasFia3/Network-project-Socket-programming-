@@ -1,0 +1,86 @@
+import java.io.*;
+import java.net.*;
+
+public class TCPServer {
+    public static void main(String[] args) {
+        try (ServerSocket serverSocket = new ServerSocket(1039)) {
+            System.out.println("Server is listening on port 1039...");
+
+            while(true) { //Infinite loop to accept clients
+                try (Socket clientSocket = serverSocket.accept(); //Waits for a client to connect when a client connects
+                     //a new Socket object (clientSocket) is created to handle the communication with the client.
+
+                     BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                     // to read data sent from the client^
+
+                     PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
+                    //Sets up an output stream to send data back to the client.
+                    //The true flag enables auto-flushing, so the output is sent immediately.
+
+                    System.out.println("Connected to client successfully!"); //Indicated that the server
+                    // has connected to a client.
+                    String inputLine = input.readLine(); //Reads from client
+
+                    if (inputLine != null) { //If client sends something then:
+
+                        String updatedLine = inputLine.replaceAll("[aeiouAEIOU]", "#");
+                        //Replaces all vowels in the input string with the # character^
+                        output.println(updatedLine); //Sends the modified string back to the client.
+                        System.out.println(updatedLine);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+import java.io.*;
+import java.net.*;
+import java.util.Scanner;
+
+public class TCPClient {
+    public static void main(String[] args) {
+        try (Socket socket = new Socket("localhost", 1039);
+             //Creates a new socket and connects it to the server running on the computer (localhost)
+             // on port 1039. This is the server's IP address and port number^
+
+             BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             //receives data from the server^
+             PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+             //Sets up an output stream to send data to the server.
+             // The true flag enables auto-flushing, so the output is sent immediately.^
+             //Notes about auto-flushing are at the end of the code
+             Scanner scan = new Scanner(System.in)) {
+
+            System.out.println("Connected to server successfully! Please enter a text:");
+            String userInput = scan.nextLine();  // Using Scanner to read from the user
+            output.println(userInput);
+
+            String response = input.readLine();
+            System.out.println("Updated text from server: " + response);
+            // Modifies response from the server as required^
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+//Some notes about the argument true in the printWriter:
+//What does auto flash mean?
+//Data doesn't usually get sent right away on the socket, it is buffered up to a certain point and
+// then sent all-at-once. Auto-flushing means data goes right through the buffer and then
+// flushed out, not kept in the buffer waiting for other data to arrive  and accumulate
