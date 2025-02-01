@@ -1,0 +1,5 @@
+ping 192.168.1.6
+ping www.ox.ac.uk.
+tracert www.ox.ac.uk.
+nslookup www.ox.ac.uk.
+telnet www.ox.ac.uk.
